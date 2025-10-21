@@ -6,105 +6,117 @@ import { assets } from '../assets/assets'
 const Appointment = () => {
   const { docId } = useParams()
   const { musican, currencySymbol } = useContext(AppContext)
-
-  const [musicaianInfo, setMusicianInfo] = useState(null)
-  const [musicainSlot, setMusicianSlot] = useState([])
-  const [slotIndex, setSlotIndex] = useState(0)
-  const [slotTime, setSlotTime] = useState('')
-
-  const fetchMusicianInfo = async () => {
-    if (!musican || musican.length === 0) return
-    const mInfo = musican.find(doc => String(doc._id) === String(docId))
-    setMusicianInfo(mInfo)
-    console.log('Fetched Musician:', mInfo)
-  }
-
-  const getAvailableSlot = async () =>{
-    setMusicianSlot([])
-
-    let today = new Date()
-
-    for(let i = 0 ; i<7 ; i++){
-      let currentDate = new Date(today)
-      currentDate.setDate(today.getDate()+i)
-
-      let endTime = new Date(today)
-      endTime.setDate(today.getDate() + i)
-      endTime.setHours(21,0,0,0)
-
-      if(today.getDate() === currentDate.getDate()){
-        currentDate.setHours(currentDate.getHours() > 10 ? currentDate.getHours() + 1 : 10)
-        currentDate.setMinutes(currentDate.getMinutes() > 30 ? 30 : 0)
-      }else{
-        currentDate.setHours(10)
-        currentDate.setMinutes(0)
-      }
-
-      let timeSlot = []
-      while(currentDate < endTime){
-        let formattedTime = currentDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        timeSlot.push({
-          datetime: new Date(currentDate),
-          time: formattedTime
-        })
-        currentDate.setMinutes(currentDate.getMinutes() + 30)
-      }
-
-      setMusicianSlot(prev => ([...prev, timeSlot]))
-    }
-  }
+  const [musicianInfo, setMusicianInfo] = useState(null)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedSlot, setSelectedSlot] = useState('')
 
   useEffect(() => {
-    fetchMusicianInfo()
+    const foundMusician = musican.find((m) => m._id === docId)
+    setMusicianInfo(foundMusician)
   }, [musican, docId])
 
-  useEffect(() => {
-    getAvailableSlot()
-  }, [musicaianInfo])
-
-  useEffect(()=>{
-    console.log(musicainSlot);
-  }, [musicainSlot])
-
-  if (!musicaianInfo) {
-    return <p className="text-center text-gray-500 mt-10">Loading musician details...</p>
+  // Generate next 5 days
+  const getNextDays = () => {
+    const days = []
+    const today = new Date()
+    for (let i = 0; i < 5; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      days.push({
+        date: date.toISOString().split('T')[0],
+        day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+      })
+    }
+    return days
   }
 
+  const days = getNextDays()
+
+  // Time slots
+  const slots = ['10:00 AM', '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM']
+
+  if (!musicianInfo) return null
+
   return (
-    <div className="min-h-screen flex justify-center items-start p-6  to-gray-200">
-      <div className="bg-gray-900 text-white shadow-2xl rounded-2xl p-6 w-full max-w-md transform transition-transform duration-300">
-        
-        {/* Musician Image */}
-        <div className="flex justify-center mb-4">
-          <img
-            src={musicaianInfo.image}
-            alt=''
-            className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg"
-          />
+    <div className="p-6 flex flex-col items-center">
+      {/* ---------Musician Info--------- */}
+      <div className="w-full bg-black text-white max-w-4xl  shadow-md rounded-2xl p-6 flex gap-6">
+        <img
+          src={musicianInfo.image}
+          alt=''
+          className="w-48 h-48 rounded-xl object-cover"
+        />
+        <div>
+          <h2 className="text-2xl font-semibold flex items-center gap-2">{musicianInfo.name}
+            <img src={assets.verified_icon} alt=''
+            className=' w-5 h-5'
+            />
+          </h2>
+          <p className="text-gray-500">{musicianInfo.speciality}</p>
+          <p className="text-green-500 mt-2 ">
+            {currencySymbol}
+            {musicianInfo.fees} per session
+          </p>
+          <p className="text-white mt-3">{musicianInfo.about}</p>
+        </div>
+      </div>
+
+      {/* --------Booking Section--------- */}
+      <div className="w-full max-w-4xl mt-6">
+        <h3 className="text-xl font-semibold mb-3">Select Date</h3>
+        <div className="flex flex-wrap gap-4">
+          {days.map((d) => (
+            <button
+              key={d.date}
+              onClick={() => setSelectedDate(d.date)}
+              className={`px-4 py-2 rounded-xl border ${
+                selectedDate === d.date
+                  ? 'bg-black text-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              {d.day}, {d.date}
+            </button>
+          ))}
         </div>
 
-        {/* Musician Info */}
-        <div className="text-center">
-          <p className="text-xl font-bold flex justify-center items-center gap-2 mb-1">
-            {musicaianInfo.name}
-            <img src={assets.verified_icon} alt="Verified" className="w-5 h-5" />
-          </p>
-         
-
-          <p className="text-purple-400 mt-1 text-center font-medium">{musicaianInfo.speciality}</p>
-           <hr className="border-gray-700 mt-2" />
-          <div className="mt-4 text-center">
-            <div className="flex justify-center items-center gap-2 mb-1">
-              <p className="text-white font-semibold">About</p>
-              <img src={assets.info_icon} alt="Info" className="filter invert w-4 h-4" />
-            </div>
-            <p className="text-gray-300">{musicaianInfo.about}</p>
+        {/* -----Slots Section------ */}
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold mb-3">Select Time </h3>
+          <div className="flex flex-wrap gap-3">
+            {slots.map((time) => (
+              <button
+                key={time}
+                onClick={() => setSelectedSlot(time)}
+                className={`px-4 py-2 rounded-xl border ${
+                  selectedSlot === time
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                {time}
+              </button>
+            ))}
           </div>
-
-          <p className="text-green-400 font-medium mt-4">
-            Appointment fee: <span>{currencySymbol}{musicaianInfo.fees}</span>
-          </p>
         </div>
+
+        {/*------- Confirm Button ---------*/}
+        <div className="mt-8 text-center">
+          <button
+            
+            className="bg-black text-white px-6 py-2 rounded-xl hover:bg-blue-700 cursor-pointer"
+            onClick={() =>
+              alert(
+                selectedDate && selectedSlot
+                  ? `Booked on ${selectedDate} at ${selectedSlot}`
+                  : 'Please select a date and time'
+              )
+            }
+          >
+             Booking Appointment
+          </button>
+        </div>
+       
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import About from './pages/About';
@@ -14,6 +14,11 @@ import Musican from './pages/Musican';
 
 
 const App = () => {
+   
+    const location = useLocation();
+
+  // Don't show footer on Login/Sign Up
+  const hideFooter = location.pathname === '/Login' || location.pathname === 'Signup';
   return (
     <>
       <div className="mx-4 sm:mx-[10%]">
@@ -35,7 +40,7 @@ const App = () => {
         <AppDownload />
       </div>
 
-      <Footer />
+       {!hideFooter && <Footer />}
     </>
   );
 };
