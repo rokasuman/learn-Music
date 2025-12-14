@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { AppContext } from '../context/AppContext';
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
 
 const Musican = () => {
   const { speciality } = useParams();
@@ -8,7 +8,6 @@ const Musican = () => {
   const navigate = useNavigate();
   const { musican } = useContext(AppContext);
 
-  
   const applyFilter = () => {
     if (speciality) {
       setFilterMusi(
@@ -25,77 +24,112 @@ const Musican = () => {
     applyFilter();
   }, [musican, speciality]);
 
-
   const categories = [
-    'R&B and alternative R&B',
-    'Folk',
-    'Rap',
-    'Electronic',
-    'Country and blues',
-    'Nepali',
+    "R&B and alternative R&B",
+    "Folk",
+    "Rap",
+    "Electronic",
+    "Country and blues",
+    "Nepali",
   ];
 
   return (
-    <div className="px-6 py-10">
-      <p className="text-gray-900 text-3xl font-medium mb-6">
-        Browse through the Legendary Singers
+    <div className="px-4 py-8 md:px-10">
+      <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+      Browse Legendary Singers
+      </h1>
+      <p className="text-gray-600 mt-1">
+        Filter musicians by their genre or view all artists.
       </p>
 
-      <div className="flex flex-col sm:flex-row items-start gap-10 mt-5">
-     
-        <div className="flex flex-col gap-3 text-sm text-black w-full sm:w-60 text-center">
+      <div className="flex flex-col sm:flex-row items-start gap-10 mt-8">
+        {/* Sidebar Categories */}
+        <div className="flex flex-col gap-3 text-sm text-black w-full sm:w-48">
           {categories.map((item, index) => (
             <p
               key={index}
               onClick={() => navigate(`/all-musicians/${item}`)}
-              className={`pl-4 py-2 border rounded cursor-pointer transition-all 
+              className={`
+                py-2 px-4 rounded-lg cursor-pointer border transition-all text-center
                 ${
                   speciality === item
-                    ? 'bg-black text-white border-black'
-                    : 'border-gray-300 hover:bg-gray-100'
-                }`}
+                    ? "bg-black text-white border-black shadow-md"
+                    : "border-gray-300 hover:bg-gray-100"
+                }
+              `}
             >
               {item}
             </p>
           ))}
 
-          {/*  View All button */}
+          {/* View All Button */}
           <p
-            onClick={() => navigate('/all-musicians')}
-            className="pl-3 py-1.5 border border-gray-400 rounded-full cursor-pointer bg-black mt-3 text-white "
+            onClick={() => navigate("/all-musicians")}
+            className="
+              py-2 px-4 mt-3 text-center rounded-full border border-gray-400 
+              bg-black text-white cursor-pointer hover:bg-purple-600 transition
+            "
           >
             View All
           </p>
         </div>
 
-        {/* --- Filtered Musicians --- */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {/* Filtered Musicians */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filterMusi.length > 0 ? (
-            filterMusi.map((item, index) => (
+            filterMusi.map((item) => (
               <div
-                key={index}
-                className="border border-black rounded-xl overflow-hidden cursor-pointer hover:-translate-y-2 transition-all duration-500 shadow-sm hover:shadow-lg w-full"
+                key={item._id}
+                onClick={() => navigate(`/appointment/${item._id}`)}
+                className="
+                  bg-white rounded-2xl overflow-hidden border border-gray-200 
+                  shadow-md cursor-pointer
+                  hover:shadow-2xl hover:-translate-y-2 transition-all duration-300
+                "
               >
-                <img
-                  onClick={() => navigate(`/appointment/${item._id}`)}
-                  className="w-full h-80 object-cover "
-                  src={item.image}
-                  alt={item.name}
-                />
-                <div className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-green-500">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <p>Available</p>
-                  </div>
-                  <p className="text-gray-900 text-lg font-medium mt-2">
+                {/* Image */}
+                <div className="relative w-full h-60">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+
+                  {/* Availability Badge */}
+                  <span
+                    className="
+                      absolute top-3 right-3 bg-green-500 text-white 
+                      text-xs px-3 py-1 rounded-full shadow-md
+                    "
+                  >
+                    Available
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <h2 className="text-lg font-semibold text-gray-900">
                     {item.name}
-                  </p>
-                  <p className="text-gray-500 text-sm">{item.speciality}</p>
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">{item.speciality}</p>
+
+                  {/* CTA */}
+                  <button
+                    onClick={() => navigate(`/appointment/${item._id}`)}
+                    className="
+                      mt-4 w-full py-2 
+                      bg-black text-white rounded-lg 
+                      hover:bg-purple-600 transition
+                      text-sm font-medium
+                    "
+                  >
+                    Book Now
+                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-500 col-span-full text-center">
+            <p className="text-gray-500 col-span-full text-center text-lg">
               No musicians found for "{speciality}"
             </p>
           )}
